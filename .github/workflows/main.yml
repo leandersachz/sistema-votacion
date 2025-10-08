@@ -1,42 +1,85 @@
 name: 🏗️ Build APK Automático
 
 on: 
-  push:
-    branches: [ main ]
   workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: 📥 Checkout código
       uses: actions/checkout@v4
       
-    - name: ⚙️ Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
+    - name: 🕐 Esperar para GitHub Pages
+      run: sleep 90
+      
+    - name: ⚙️ Instalar JDK 17 automáticamente
+      run: |
+        sudo apt update
+        sudo apt install -y openjdk-17-jdk
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+        echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
         
     - name: 🛠️ Instalar Bubblewrap
       run: npm install -g @bubblewrap/cli
       
-    - name: 🌐 Obtener URL de GitHub Pages
-      id: pages_url
+    - name: 🏗️ Generar APK (automático)
       run: |
-        REPO_OWNER="${{ github.repository_owner }}"
-        REPO_NAME="${{ github.event.repository.name }}"
-        echo "PWA_URL=https://${REPO_OWNER}.github.io/${REPO_NAME}" >> $GITHUB_OUTPUT
-        echo "📱 URL de la PWA: https://${REPO_OWNER}.github.io/${REPO_NAME}"
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        echo "🔗 Generando APK para: $URL"
         
-    - name: 🏗️ Generar APK
-      run: |
-        bubblewrap init --manifest=${{ steps.pages_url.outputs.PWA_URL }}/manifest.json --generate
-        bubblewrap build
+        # Usar expect para automatizar las respuestas
+        apt-get update && apt-get install -y expect
         
+        /usr/bin/expect << EOF
+        spawn bubblewrap init --manifest="$URL/manifest.json"
+        expect "Do you want Bubblewrap to install the JDK"
+        send "n\r"
+        expect "Path to your existing JDK 17"
+        send "/usr/lib/jvm/java-17-openjdk-amd64\r"
+        expect "Package name"
+        send "com.midominio.votacion\r"
+        expect "App name"
+        send "Sistema de Votación\r"
+        expect "Launcher name"
+        send "Votación\r"
+        expect "App version"
+        send "\r"
+        expect "App version code"
+        send "\r"
+        expect "Host URL"
+        send "\r"
+        expect "Start URL"
+        send "\r"
+        expect "Theme color"
+        send "\r"
+        expect "Background color"
+        send "\r"
+        expect "Display mode"
+        send "\r"
+        expect "Orientation"
+        send "\r"
+        expect "Include app shortcuts"
+        send "n\r"
+        expect "Include splash screen"
+        send "y\r"
+        expect "Generate.*Signed Bundle"
+        send "n\r"
+        expect "Minimum Android SDK"
+        send "19\r"
+        expect eof
+        EOF
+        
+    - name: 🔨 Construir APK
+      run: bubblewrap build
+      
     - name: 📦 Subir APK
       uses: actions/upload-artifact@v4
       with:
-        name: 📱 app-votacion-apk
+        name: sistema-votacion-apk
         path: app/build/outputs/apk/release/*.apk
         retention-days: 90
