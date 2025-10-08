@@ -1,0 +1,42 @@
+name: 🏗️ Build APK Automático
+
+on: 
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
+      
+    - name: ⚙️ Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: 🛠️ Instalar Bubblewrap
+      run: npm install -g @bubblewrap/cli
+      
+    - name: 🌐 Obtener URL de GitHub Pages
+      id: pages_url
+      run: |
+        REPO_OWNER="${{ github.repository_owner }}"
+        REPO_NAME="${{ github.event.repository.name }}"
+        echo "PWA_URL=https://${REPO_OWNER}.github.io/${REPO_NAME}" >> $GITHUB_OUTPUT
+        echo "📱 URL de la PWA: https://${REPO_OWNER}.github.io/${REPO_NAME}"
+        
+    - name: 🏗️ Generar APK
+      run: |
+        bubblewrap init --manifest=${{ steps.pages_url.outputs.PWA_URL }}/manifest.json --generate
+        bubblewrap build
+        
+    - name: 📦 Subir APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: 📱 app-votacion-apk
+        path: app/build/outputs/apk/release/*.apk
+        retention-days: 90
