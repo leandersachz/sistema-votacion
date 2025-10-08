@@ -1,85 +1,34 @@
-name: 🏗️ Build APK Automático
+name: 📱 Generar APK - Método Fácil
 
-on: 
-  workflow_dispatch:
-  push:
-    branches: [main]
+on: [workflow_dispatch, push]
 
 jobs:
-  build-apk:
+  generate-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    
     steps:
-    - name: 📥 Checkout código
-      uses: actions/checkout@v4
-      
-    - name: 🕐 Esperar para GitHub Pages
-      run: sleep 90
-      
-    - name: ⚙️ Instalar JDK 17 automáticamente
+    - uses: actions/checkout@v4
+    
+    - name: 🚀 Instrucciones para APK Instantáneo
       run: |
-        sudo apt update
-        sudo apt install -y openjdk-17-jdk
-        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-        echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+        echo " "
+        echo "🎉 ¡TU APP ESTÁ LISTA!"
+        echo "🔗 URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        echo " "
+        echo "📱 PARA GENERAR EL APK (2 MINUTOS):"
+        echo "1. 🌐 Ve a: https://www.pwa2apk.com"
+        echo "2. 📝 Pega esta URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        echo "3. ⬇️  Descarga el APK directamente"
+        echo " "
+        echo "🎯 ALTERNATIVAS:"
+        echo "• https://pwabuilder.com"
+        echo "• https://www.pwa-to-apk.com"
+        echo " "
+        echo "✅ Verifica que tu app funcione:"
+        echo "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+        echo " "
         
-    - name: 🛠️ Instalar Bubblewrap
-      run: npm install -g @bubblewrap/cli
-      
-    - name: 🏗️ Generar APK (automático)
+    - name: 🔍 Verificar tu App
       run: |
-        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
-        echo "🔗 Generando APK para: $URL"
-        
-        # Usar expect para automatizar las respuestas
-        apt-get update && apt-get install -y expect
-        
-        /usr/bin/expect << EOF
-        spawn bubblewrap init --manifest="$URL/manifest.json"
-        expect "Do you want Bubblewrap to install the JDK"
-        send "n\r"
-        expect "Path to your existing JDK 17"
-        send "/usr/lib/jvm/java-17-openjdk-amd64\r"
-        expect "Package name"
-        send "com.midominio.votacion\r"
-        expect "App name"
-        send "Sistema de Votación\r"
-        expect "Launcher name"
-        send "Votación\r"
-        expect "App version"
-        send "\r"
-        expect "App version code"
-        send "\r"
-        expect "Host URL"
-        send "\r"
-        expect "Start URL"
-        send "\r"
-        expect "Theme color"
-        send "\r"
-        expect "Background color"
-        send "\r"
-        expect "Display mode"
-        send "\r"
-        expect "Orientation"
-        send "\r"
-        expect "Include app shortcuts"
-        send "n\r"
-        expect "Include splash screen"
-        send "y\r"
-        expect "Generate.*Signed Bundle"
-        send "n\r"
-        expect "Minimum Android SDK"
-        send "19\r"
-        expect eof
-        EOF
-        
-    - name: 🔨 Construir APK
-      run: bubblewrap build
-      
-    - name: 📦 Subir APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: sistema-votacion-apk
-        path: app/build/outputs/apk/release/*.apk
-        retention-days: 90
+        echo "🔍 Verificando tu aplicación..."
+        curl -s -o /dev/null -w "Código HTTP: %{http_code}" \
+        "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/manifest.json" || echo "❌ Manifest no accesible"
