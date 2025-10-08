@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Votación</title>
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="theme-color" content="#1a2a6c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sistema Votación">
+    <link rel="stylesheet" href="style.css">
+    <script src="pouchdb.min.js"></script>
+    <script src="xlsx.full.min.js"></script>
+    <script src="process.js"></script>
+    <script src="registerWorker.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de inicio -->
+        <div id="login-screen" class="screen active">
+            <h1>Sistema de Votación Segura</h1>
+            <div class="instructions">
+                <p>Para comenzar a votar, ingrese el código de acceso proporcionado por los organizadores.</p>
+            </div>
+            <!-- Eliminados los mensajes técnicos -->
+            <input type="password" id="access-code" placeholder="Ingrese el código de acceso">
+            <button class="btn-primary" onclick="checkAccessCode()">Acceder para Votar</button>
+            <button class="admin-btn" onclick="showAdminLogin()">Acceso Administrador</button>
+        </div>
+        
+        <!-- Pantalla de selección de candidato -->
+        <div id="voting-screen" class="screen">
+            <h1>Seleccione su candidato</h1>
+            <div id="candidates-list">
+                <!-- Los candidatos se cargarán aquí -->
+            </div>
+        </div>
+        
+        <!-- Pantalla de confirmación -->
+        <div id="confirmation-screen" class="screen">
+            <h1>Confirmar su voto</h1>
+            <div id="selected-candidate-info"></div>
+            <button class="btn-success" onclick="castVote()">Confirmar Voto</button>
+            <button class="btn-secondary" onclick="goBackToVoting()">Cambiar Candidato</button>
+        </div>
+        
+        <!-- Pantalla de bloqueo -->
+        <div id="lock-screen" class="screen">
+            <div class="locked-message">
+                <h2>¡Su voto ha sido registrado!</h2>
+                <p>La aplicación se ha bloqueado para garantizar la integridad del proceso electoral.</p>
+                <p>Si necesita realizar otro voto autorizado, ingrese el código de acceso nuevamente.</p>
+                <p>Gracias por participar.</p>
+            </div>
+            <button class="btn-primary" onclick="showLoginScreen()">Ingresar código para nuevo voto</button>
+            <button class="admin-btn" onclick="showAdminLogin()">Acceso Administrador</button>
+        </div>
+        
+        <!-- Pantalla de administrador -->
+        <div id="admin-screen" class="screen">
+            <h1>Panel de Administración</h1>
+            <input type="password" id="admin-code" placeholder="Código de administrador">
+            <button class="btn-primary" onclick="checkAdminCode()">Acceder</button>
+            <button class="btn-secondary" onclick="showLoginScreen()">Volver</button>
+        </div>
+        
+        <!-- Pantalla de resultados -->
+        <div id="results-screen" class="screen">
+            <h1>Resultados de la Votación</h1>
+            
+            <!-- Eliminada la información de almacenamiento -->
+            
+            <div class="export-options">
+                <button class="btn-excel" onclick="exportToExcel()">📊 Exportar a Excel</button>
+                <button class="btn-primary" onclick="exportToJSON()">📁 Exportar JSON</button>
+            </div>
+            
+            <div id="results-container" class="results">
+                <!-- Los resultados se cargarán aquí -->
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-title">Distribución de Votos</div>
+                <div class="chart-container" id="bar-chart">
+                    <!-- Gráfico de barras se insertará aquí -->
+                </div>
+                
+                <div class="chart-title">Resultados en Porcentajes</div>
+                <div class="chart-container" id="pie-chart">
+                    <!-- Gráfico circular se insertará aquí -->
+                </div>
+            </div>
+            
+            <div class="admin-panel">
+                <h3>Opciones de Administrador</h3>
+                <button class="btn-danger" onclick="confirmClearVotes()">Eliminar Todos los Votos</button>
+                <button class="btn-secondary" onclick="resetVotingApp()">Reiniciar Aplicación</button>
+                <!-- Eliminado el botón de información de base de datos -->
+            </div>
+            
+            <button class="btn-secondary" onclick="showLoginScreen()">Volver al Inicio</button>
+        </div>
+
+        <!-- Modal de confirmación -->
+        <div id="confirm-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+            <div style="background: white; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px;">
+                <h3 id="modal-title" style="margin-bottom: 15px;">¿Está seguro?</h3>
+                <p id="modal-message">Esta acción no se puede deshacer.</p>
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="btn-secondary" onclick="hideModal()">Cancelar</button>
+                    <button class="btn-danger" id="modal-confirm-btn" onclick="modalConfirmAction()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
